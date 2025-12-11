@@ -1,32 +1,45 @@
 # scripts/run_gen1_builders.py
 
-import numpy as np
 from pathlib import Path
-from material_niches.env import GridConfig
+import numpy as np
+
+from material_niches.env import GridConfig, NicheGridEnv
 from material_niches.simulate import run_generation
 
-OUTDIR = Path("results") / "gen1_builders"
-OUTDIR.mkdir(parents=True, exist_ok=True)
+def main():
+    outdir = Path("results") / "gen1_builders"
+    outdir.mkdir(parents=True, exist_ok=True)
 
-config = GridConfig(
-    width=10,
-    height=5,
-    start_positions=[(4, 0)],  # (y, x)
-    goal_positions=[(2, 9)],
-)
+    config = GridConfig(
+        width=10,
+        height=5,
+        start_positions=[(4, 0)],  # (y, x)
+        goal_positions=[(2, 9)],
+    )
 
-env, trajectories = run_generation(
-    config,
-    builder_generation=True,
-    n_episodes=50,
-    T=40,
-    seed=42,
-)
+    env, trajectories = run_generation(
+        config,
+        builder_generation=True,
+        n_episodes=20,
+        T=30,
+        seed=42,
+    )
 
-# Save logs
-np.savez(
-    OUTDIR / "builder_runs.npz",
-    tile_map=env.tile_map,
-    trajectories=trajectories,
-)
-print(f"Saved builder generation logs to {OUTDIR}")
+    arr_loc = np.stack([traj["loc"] for traj in trajectories], axis=0)
+    arr_tile = np.stack([traj["tile"] for traj in trajectories], axis=0)
+    arr_act = np.stack([traj["action"] for traj in trajectories], axis=0)
+    arr_fe = np.stack([traj["free_energy"] for traj in trajectories], axis=0)
+
+    np.savez(
+        outdir / "builder_runs.npz",
+        tile_map=env.tile_map,
+        loc=arr_loc,
+        tile=arr_tile,
+        action=arr_act,
+        free_energy=arr_fe,
+    )
+
+    print(f"Saved builder generation logs to {outdir / 'builder_runs.npz'}")
+
+if __name__ == "__main__":
+    main()

@@ -1,7 +1,7 @@
 # src/material_niches/env.py
 
 from dataclasses import dataclass
-from typing import Tuple, Dict, List
+from typing import Tuple, Dict, List, Optional
 import numpy as np
 
 Move = Tuple[int, int]
@@ -33,21 +33,30 @@ class NicheGridEnv:
     WILD = 0
     MARKED = 1
 
-    def __init__(self, config: GridConfig, rng: np.random.Generator | None = None):
+    def __init__(
+        self,
+        config: GridConfig,
+        rng: Optional[np.random.Generator] = None,
+        initial_tile_map: Optional[np.ndarray] = None,
+    ):
         self.config = config
         self.rng = rng or np.random.default_rng()
 
-        # map from linear index -> tile type (WILD / MARKED)
         self.num_cells = config.width * config.height
-        self.tile_map = np.full(self.num_cells, self.WILD, dtype=int)
 
-        # Pre-mark goal cells as MARKED if you want
-        for (y, x) in config.goal_positions:
-            idx = self._xy_to_idx(x, y)
-            self.tile_map[idx] = self.MARKED
+        if initial_tile_map is not None:
+            assert initial_tile_map.shape == (self.num_cells,)
+            self.tile_map = initial_tile_map.astype(int).copy()
+        else:
+            # default: all wild
+            self.tile_map = np.full(self.num_cells, self.WILD, dtype=int)
 
-        # state
-        self.agent_idx = None
+            # mark goal cells as MARKED if desired
+            for (y, x) in config.goal_positions:
+                idx = self._xy_to_idx(x, y)
+                self.tile_map[idx] = self.MARKED
+
+        self.agent_idx: Optional[int] = None
 
     def _xy_to_idx(self, x: int, y: int) -> int:
         return y * self.config.width + x
@@ -112,7 +121,7 @@ class NicheGridEnv:
         tile_type = state["tile"]
 
         x, y = self._idx_to_xy(idx)
-        is_goal = (x, y) in self.config.goal_positions
+        is_goal = (y, x) in self.config.goal_positions
 
         # modality 1: landmark
         if is_goal:
@@ -140,3 +149,13 @@ class NicheGridEnv:
         for (y, x) in cells_to_remove:
             idx = self._xy_to_idx(x, y)
             self.tile_map[idx] = self.WILD
+
+    def clone_with_tilemap(self, tile_map: np.ndarray) -> "NicheGridEnv":
+        """
+        Convenience: make a new env with the same config but a supplied tile_map.
+        """
+        return NicheGridEnv(
+            config=self.config,
+            rng=self.rng,
+            initial_tile_map=tile_map,
+        )

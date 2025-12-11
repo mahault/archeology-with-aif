@@ -1,0 +1,14 @@
+README.md
+setup.py
+src/material_niches/__init__.py
+src/material_niches/agents.py
+src/material_niches/analysis.py
+src/material_niches/compare_salience_FE.py
+src/material_niches/env.py
+src/material_niches/generative_model.py
+src/material_niches/simulate.py
+src/material_niches.egg-info/PKG-INFO
+src/material_niches.egg-info/SOURCES.txt
+src/material_niches.egg-info/dependency_links.txt
+src/material_niches.egg-info/requires.txt
+src/material_niches.egg-info/top_level.txt
