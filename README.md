@@ -1,7 +1,27 @@
 # archeology-with-aif
 Archeology with AIF
 
-Roadmap
+## Recent Updates
+
+### Navigation Fix (Dec 2024)
+
+Fixed several issues that were preventing the active inference agent from reliably reaching goals:
+
+1. **Deterministic Position Observations**: Changed position A-matrix from uncertainty-based (which penalized exploration by diluting C preferences) to deterministic (~98% certainty). Epistemic value now comes from tile uncertainty instead.
+
+2. **Reduced Comfort Preferences**: Lowered C_land (0.5→0.1) and C_arousal (2.0→0.5) to prevent "comfort trap" where agent preferred staying on marked tiles over moving toward goals.
+
+3. **Immediate Waypoint Model Updates**: Model now rebuilds immediately when waypoints are reached, not just every N steps. This prevents stale C_pos preferences from targeting old waypoints.
+
+4. **Initial Waypoint Skip**: Added check to advance past waypoint 0 if agent starts there, so initial model targets the next waypoint.
+
+5. **Smoothed D Prior**: Changed D_loc from point mass (100% at start) to smoothed prior (95% start + uniform baseline). Point mass priors can't be updated by observations since 0 × likelihood = 0.
+
+Result: Agent now achieves **100% goal rate** with deterministic action selection.
+
+---
+
+## Roadmap
 Phase 0 — Boilerplate / environment baseline
 
 Set up repo

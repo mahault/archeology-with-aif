@@ -116,6 +116,11 @@ class NicheGridEnv:
 
         This is the generative PROCESS side; the corresponding A-matrix will
         be built to match this logic (Wild vs Marked vs Goal).
+
+        Modalities:
+        - landmark: 0=WildCue, 1=MarkedCue, 2=GoalCue
+        - arousal: 0=Low, 1=High
+        - position: current location index (for exploration)
         """
         idx = state["loc"]
         tile_type = state["tile"]
@@ -137,9 +142,13 @@ class NicheGridEnv:
         else:
             arousal_obs = 0  # Low
 
+        # modality 3: position (enables exploration through epistemic value)
+        pos_obs = idx
+
         return {
             "landmark": land_obs,
             "arousal": arousal_obs,
+            "position": pos_obs,
         }
 
     def remove_path_segment(self, cells_to_remove: List[Tuple[int, int]]) -> None:
